@@ -1,35 +1,51 @@
-# Contexte 1 : Organisation & Équipe
+# Contexte 3 : Vente & Ticket
 
 ## Entités
-- `Organisation`
-- `Utilisateur`
-- `Role`
-- `Permission`
+- `Vente`
+- `Ticket`
 
 ## Value Objects
-- `NomOrganisation`
-- `EmailUtilisateur`
-- `RoleName` (ex: "ADMIN", "CONTROLEUR", "VENDEUR")
+- `VenteId`
+- `TicketId`
+- `Prix`
+- `StatutVente` (`EN_ATTENTE`, `PAYEE`, `ECHOUEE`, `REMBOURSEE`)
+- `StatutTicket` (`NON_UTILISE`, `UTILISE`)
+- `QRCode` (signé cryptographiquement)
 
 ## Agrégat racine
-**Organisation**
-- Contient `Utilisateur[]`
-- Contient `Role[]`
+**Vente** (cœur du système)
+- Contient un `Ticket` (après paiement réussi)
+- Référence `event_id` (obligatoire)
+- Référence `type_ticket_id` (obligatoire)
+- Référence `schedule_id` (nullable)
+
+## Structure
+Vente
+├── event_id (obligatoire)
+├── type_ticket_id (obligatoire)
+├── schedule_id (nullable)
+├── prix (copié du TypeTicket au moment de la vente)
+├── statut (EN_ATTENTE / PAYEE / ECHOUEE)
+└── ticket_id (nullable, généré après paiement)
+
+Ticket
+├── qr_code (signé)
+├── statut (NON_UTILISE / UTILISE)
+└── vente_id
 
 ## Règles métier
 
 | ID | Règle |
 |----|-------|
-| ORG1 | Une organisation a au moins un admin |
-| ORG2 | Un utilisateur peut avoir plusieurs rôles dans la même organisation |
-| ORG3 | Les permissions sont : `CREER_EVENT`, `GERER_SCHEDULE`, `VOIR_VENTES`, `VALIDER_TICKET`, `VENDRESUR_PLACE` |
-| ORG4 | Seul un admin peut créer/modifier des rôles |
-
-## Structure
-Organisation (1)
-│
-└── Utilisateur (n)
-│
-└── Role (n)
-│
-└── Permission (n)
+| VNT1 | Une vente a toujours `event_id` + `type_ticket_id` non nuls |
+| VNT2 | Le `prix` de la vente est figé au moment de la création (copie du prix du TypeTicket) |
+| VNT3 | Si `schedule_id` est NULL → vente **directe événement** (pas de contrainte horaire) |
+| VNT4 | Si `schedule_id` est renseigné :
+- Vente autorisée uniquement pendant la plage horaire du schedule
+- On applique le `quota_journalier` du schedule si défini |
+  | VNT5 | Le `quota_total_par_type` limite les ventes PAYEE pour ce type (tous schedules confondus + direct) |
+  | VNT6 | Le `quota_total_event` (si défini) limite la somme de **tous les types** |
+  | VNT7 | Une vente commence en `EN_ATTENTE` → après paiement réussi → `PAYEE` + génération Ticket |
+  | VNT8 | Après échec ou timeout (10 min) → statut `ECHOUEE` |
+  | VNT9 | Un `Ticket` a un `StatutTicket` (`NON_UTILISE` → `UTILISE` irréversible) |
+  | VNT10 | Un ticket est lié à un `TypeTicket` (hérite son prix, mais le prix est déjà dans Vente) |
