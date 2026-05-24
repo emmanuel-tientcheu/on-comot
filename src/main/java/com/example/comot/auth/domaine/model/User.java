@@ -1,5 +1,6 @@
 package com.example.comot.auth.domaine.model;
 
+import com.example.comot.core.domaine.model.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,9 +8,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
-public class User {
-    @Id
-    private String id;
+public class User extends BaseEntity {
     @Column
     private String firstName;
     @Column
@@ -22,15 +21,11 @@ public class User {
     public User() {}
 
     public User(String id, String firstName, String lastname, String email, String password) {
-        this.id = id;
+        super(id);
         this.firstName = firstName;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public String getFirstName() {

@@ -2,32 +2,18 @@ package com.example.comot.auth.infrastructure.persistance.sql;
 
 import com.example.comot.auth.application.ports.UserRepository;
 import com.example.comot.auth.domaine.model.User;
+import com.example.comot.core.spring.persistance.ram.InMemoryBaseRepository;
+import com.example.comot.core.spring.persistance.sql.SQLBaseRepository;
 import jakarta.persistence.EntityManager;
 
 import java.util.Optional;
 
-public class SQLUserRepository implements UserRepository {
-    private final EntityManager entity;
+public class SQLUserRepository extends SQLBaseRepository<User> implements UserRepository {
     private final SQLUserAccessor dataAccessor;
 
     public SQLUserRepository(EntityManager entity, SQLUserAccessor dataAccessor) {
-        this.entity = entity;
+        super(entity);
         this.dataAccessor = dataAccessor;
-    }
-
-    @Override
-    public Optional<User> findById(String id) {
-        return Optional.ofNullable(this.entity.find(User.class, id));
-    }
-
-    @Override
-    public void save(User user) {
-        this.entity.persist(user);
-    }
-
-    @Override
-    public void delete(User user) {
-        this.entity.remove(user);
     }
 
     @Override
@@ -36,7 +22,7 @@ public class SQLUserRepository implements UserRepository {
     }
 
     @Override
-    public void clear() {
-        this.entity.createQuery("DELETE FROM " + User.class.getSimpleName()).executeUpdate();
+    public Class<User> getEntityMangerClass() {
+        return User.class;
     }
 }
