@@ -112,6 +112,34 @@ public class AddRolePermissionE2ETest {
     }
 
     @Test
+    void whenPermissionAlreadyAssign_shouldThrow() throws Exception {
+        var permission = new Permission(
+                "permission-2",
+                "title",
+                Category.CREATE_EVENT,
+                "description"
+        );
+        this.permissionRepository.save(permission);
+
+        var existingRole = this.repository.findById(role.getId()).get();
+        existingRole.addPermission(permission.getId(), permission.getCategory());
+        this.repository.save(existingRole);
+
+        var dto = new AddRolePermissionDTO(
+                role.getId(),
+                permission.getId()
+        );
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/roles/add-permission")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(dto))
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
     void shouldGetRole() throws Exception {
 
         var result = mockMvc.perform(

@@ -12,4 +12,9 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     ResponseEntity<?> handeBadRequest(BadRequestException e) {
         return ResponseEntity.badRequest().build();
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<?> handeIllegalArgument(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().build();
+    }
 }
