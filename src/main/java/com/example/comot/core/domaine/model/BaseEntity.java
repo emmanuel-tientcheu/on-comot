@@ -6,7 +6,7 @@ import jakarta.persistence.MappedSuperclass;
 @MappedSuperclass
 public class BaseEntity {
     @Id
-    private String id;
+    public String id;
 
     public BaseEntity() {}
 

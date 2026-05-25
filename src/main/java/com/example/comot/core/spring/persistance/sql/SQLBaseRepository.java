@@ -21,6 +21,7 @@ public abstract class SQLBaseRepository<T extends BaseEntity> implements BaseRep
     @Override
     public void save(BaseEntity entity) {
         this.entityManager.persist(entity);
+        this.entityManager.flush();
     }
 
     @Override
