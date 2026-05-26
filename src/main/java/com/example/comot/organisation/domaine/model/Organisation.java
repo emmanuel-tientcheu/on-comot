@@ -42,8 +42,11 @@ public class Organisation extends BaseEntity {
 
     public Boolean getActive(){ return active; }
 
-    public void setActive(Boolean active) { this.active = active; }
-
     public User getUser() { return  user; }
 
+    public void setActive(Boolean active) { this.active = active; }
+
+    public void setName(String name) { this.name = name; }
+
+    public void setDescription(String description) { this.description = description; }
 }

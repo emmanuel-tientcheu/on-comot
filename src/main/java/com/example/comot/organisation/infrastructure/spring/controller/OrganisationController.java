@@ -3,9 +3,12 @@ package com.example.comot.organisation.infrastructure.spring.controller;
 import an.awesome.pipelinr.Pipeline;
 import com.example.comot.auth.domaine.viewModel.IdResponse;
 import com.example.comot.organisation.application.useCases.CreateOrganisationCommand;
+import com.example.comot.organisation.application.useCases.DeleteOrganisationCommand;
 import com.example.comot.organisation.application.useCases.GetOrganisationCommand;
+import com.example.comot.organisation.application.useCases.UpdateOrganisationCommand;
 import com.example.comot.organisation.domaine.viewModel.OrganisationViewModel;
 import com.example.comot.organisation.infrastructure.spring.dto.CreateOrganisationDTO;
+import com.example.comot.organisation.infrastructure.spring.dto.UpdateOrganisationDTO;
 import com.example.comot.permission.infrastructure.spring.dto.CreatePermissionDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -40,5 +43,21 @@ public class OrganisationController {
         var result = this.pipeline.send(new GetOrganisationCommand(id));
 
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}")
+    ResponseEntity<Void> updateOrganisation(
+            @PathVariable("id") String id,
+            @RequestBody UpdateOrganisationDTO dto
+    ) {
+        this.pipeline.send(new UpdateOrganisationCommand(id, dto.getName(), dto.getDescription()));
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    ResponseEntity<Void> deleteOrganisation(@PathVariable("id") String id) {
+        var result = this.pipeline.send(new DeleteOrganisationCommand(id));
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
