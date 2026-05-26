@@ -1,8 +1,10 @@
 package com.example.comot.organisation.infrastructure.spring.configuration;
 
+import com.example.comot.organisation.application.ports.OrganisationQueries;
 import com.example.comot.organisation.application.ports.OrganisationRepository;
 import com.example.comot.organisation.infrastructure.persistance.ram.InMemoryOrganisationRepository;
 import com.example.comot.organisation.infrastructure.persistance.sql.SQLOrganisationAccessor;
+import com.example.comot.organisation.infrastructure.persistance.sql.SQLOrganisationQueries;
 import com.example.comot.organisation.infrastructure.persistance.sql.SQLOrganisationRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.context.annotation.Bean;
@@ -17,5 +19,10 @@ public class OrganisationAdapterConfiguration {
             SQLOrganisationAccessor dataAccessor
     ) {
         return new SQLOrganisationRepository(entityManager, dataAccessor);
+    }
+
+    @Bean
+    public OrganisationQueries organisationQueries( EntityManager entityManager ) {
+        return new SQLOrganisationQueries(entityManager);
     }
 }

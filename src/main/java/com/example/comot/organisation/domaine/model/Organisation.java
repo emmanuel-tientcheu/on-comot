@@ -44,4 +44,6 @@ public class Organisation extends BaseEntity {
 
     public void setActive(Boolean active) { this.active = active; }
 
+    public User getUser() { return  user; }
+
 }

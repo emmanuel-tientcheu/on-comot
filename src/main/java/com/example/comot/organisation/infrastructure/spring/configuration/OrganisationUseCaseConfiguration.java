@@ -1,8 +1,10 @@
 package com.example.comot.organisation.infrastructure.spring.configuration;
 
 import com.example.comot.auth.application.ports.UserRepository;
+import com.example.comot.organisation.application.ports.OrganisationQueries;
 import com.example.comot.organisation.application.ports.OrganisationRepository;
 import com.example.comot.organisation.application.useCases.CreateOrganisationCommandHandler;
+import com.example.comot.organisation.application.useCases.GetOrganisationCommandHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,5 +17,12 @@ public class OrganisationUseCaseConfiguration {
             final UserRepository userRepository
     ) {
         return new CreateOrganisationCommandHandler(organisationRepository, userRepository);
+    }
+
+    @Bean
+    public GetOrganisationCommandHandler getOrganisationCommandHandler(
+            final OrganisationQueries organisationQueries
+    ) {
+        return new GetOrganisationCommandHandler(organisationQueries);
     }
 }
