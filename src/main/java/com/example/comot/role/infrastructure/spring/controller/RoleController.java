@@ -2,12 +2,11 @@ package com.example.comot.role.infrastructure.spring.controller;
 
 import an.awesome.pipelinr.Pipeline;
 import com.example.comot.auth.domaine.viewModel.IdResponse;
-import com.example.comot.role.application.useCases.AddRolePermissionCommand;
-import com.example.comot.role.application.useCases.CreateRoleCommand;
-import com.example.comot.role.application.useCases.GetRoleCommand;
+import com.example.comot.role.application.useCases.*;
 import com.example.comot.role.domaine.viewModel.RoleViewModel;
 import com.example.comot.role.infrastructure.spring.dto.AddRolePermissionDTO;
 import com.example.comot.role.infrastructure.spring.dto.CreateRoleDTO;
+import com.example.comot.role.infrastructure.spring.dto.RemoveRolePermissionDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +43,12 @@ public class RoleController {
     @PostMapping("/add-permission")
     ResponseEntity<Void> addPermission(@RequestBody AddRolePermissionDTO dto) {
         this.pipeline.send(new AddRolePermissionCommand(dto.getRoleId(), dto.getPermissionId()));
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/remove-permission")
+    ResponseEntity<Void> removePermission(@RequestBody RemoveRolePermissionDTO dto) {
+        this.pipeline.send(new RemoveRolePermissionCommand(dto.getRoleId(), dto.getPermissionId()));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

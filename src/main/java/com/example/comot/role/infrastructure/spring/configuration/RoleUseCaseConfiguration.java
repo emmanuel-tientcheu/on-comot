@@ -6,8 +6,10 @@ import com.example.comot.role.application.ports.RoleRepository;
 import com.example.comot.role.application.useCases.AddRolePermissionCommandHandler;
 import com.example.comot.role.application.useCases.CreateRoleCommandHandler;
 import com.example.comot.role.application.useCases.GetRoleCommandHandler;
+import com.example.comot.role.application.useCases.RemoveRolePermissionCommandHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.parameters.P;
 
 @Configuration
 public class RoleUseCaseConfiguration {
@@ -27,5 +29,13 @@ public class RoleUseCaseConfiguration {
     @Bean
     public GetRoleCommandHandler getRoleCommandHandler(RoleQueries roleQueries) {
         return new GetRoleCommandHandler(roleQueries);
+    }
+
+    @Bean
+    public RemoveRolePermissionCommandHandler removeRolePermissionCommandHandler(
+            RoleRepository roleRepository,
+            PermissionRepository permissionRepository
+    ) {
+        return new RemoveRolePermissionCommandHandler(roleRepository, permissionRepository);
     }
 }
