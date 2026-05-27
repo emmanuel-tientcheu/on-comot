@@ -2,11 +2,9 @@ package com.example.comot.organisation.infrastructure.spring.controller;
 
 import an.awesome.pipelinr.Pipeline;
 import com.example.comot.auth.domaine.viewModel.IdResponse;
-import com.example.comot.organisation.application.useCases.CreateOrganisationCommand;
-import com.example.comot.organisation.application.useCases.DeleteOrganisationCommand;
-import com.example.comot.organisation.application.useCases.GetOrganisationCommand;
-import com.example.comot.organisation.application.useCases.UpdateOrganisationCommand;
+import com.example.comot.organisation.application.useCases.*;
 import com.example.comot.organisation.domaine.viewModel.OrganisationViewModel;
+import com.example.comot.organisation.infrastructure.spring.dto.AddMemberToOrganisationDTO;
 import com.example.comot.organisation.infrastructure.spring.dto.CreateOrganisationDTO;
 import com.example.comot.organisation.infrastructure.spring.dto.UpdateOrganisationDTO;
 import com.example.comot.permission.infrastructure.spring.dto.CreatePermissionDTO;
@@ -59,5 +57,15 @@ public class OrganisationController {
         var result = this.pipeline.send(new DeleteOrganisationCommand(id));
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/add-member")
+    ResponseEntity<Void> addMemberToOrganisation(@RequestBody AddMemberToOrganisationDTO dto) {
+        this.pipeline.send(new AddMemberToOrganisationCommand(
+                dto.getOrganisationId(),
+                dto.getUserId()
+        ));
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

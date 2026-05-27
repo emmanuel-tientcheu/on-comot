@@ -3,10 +3,7 @@ package com.example.comot.organisation.infrastructure.spring.configuration;
 import com.example.comot.auth.application.ports.UserRepository;
 import com.example.comot.organisation.application.ports.OrganisationQueries;
 import com.example.comot.organisation.application.ports.OrganisationRepository;
-import com.example.comot.organisation.application.useCases.CreateOrganisationCommandHandler;
-import com.example.comot.organisation.application.useCases.DeleteOrganisationCommandHandler;
-import com.example.comot.organisation.application.useCases.GetOrganisationCommandHandler;
-import com.example.comot.organisation.application.useCases.UpdateOrganisationCommandHandler;
+import com.example.comot.organisation.application.useCases.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -40,5 +37,13 @@ public class OrganisationUseCaseConfiguration {
             final OrganisationRepository organisationRepository
     ) {
         return new DeleteOrganisationCommandHandler(organisationRepository);
+    }
+
+    @Bean
+    public AddMemberToOrganisationCommandHandler addMemberToOrganisationCommandHandler(
+            OrganisationRepository organisationRepository,
+            UserRepository userRepository
+    ) {
+        return new AddMemberToOrganisationCommandHandler(organisationRepository, userRepository);
     }
 }

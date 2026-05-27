@@ -23,7 +23,7 @@ public class Organisation extends BaseEntity {
     @Column
     private Boolean active;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id",  nullable = false)
     private String userId;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -31,6 +31,13 @@ public class Organisation extends BaseEntity {
     @MapsId("userId")
     private User user;
 
+
+    @OneToMany(
+            mappedBy = "organisation",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
     private Set<OrganisationMember> members;
 
     public Organisation() {}
@@ -53,6 +60,8 @@ public class Organisation extends BaseEntity {
     public Boolean getActive(){ return active; }
 
     public User getUser() { return  user; }
+
+    public Set<OrganisationMember> getMembers() { return members; }
 
     public void setActive(Boolean active) { this.active = active; }
 
@@ -122,10 +131,29 @@ public class Organisation extends BaseEntity {
         return member.get().hasPermission(permissionId);
     }
 
-
+    @Entity
+    @Table(name = "organisation_members")
     public static class OrganisationMember extends BaseEntity {
+        @Column(name = "user_id")
         private String userId;
+
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "user_id", insertable = false, updatable = false)
+        private User user;
+
+        @Column(name = "organisation_id")
         private String organisationId;
+
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "organisation_id", insertable = false, updatable = false)
+        private Organisation organisation;
+
+        @OneToMany(
+                mappedBy = "member",
+                cascade = CascadeType.ALL,
+                orphanRemoval = true,
+                fetch = FetchType.EAGER
+        )
         private Set<PermissionMember> permissions;
 
         public OrganisationMember(){}
@@ -174,16 +202,33 @@ public class Organisation extends BaseEntity {
                     .anyMatch( p -> p.getPermissionId().equals(permissionId));
         }
 
+        @Entity
+        @Table(name = "member_permissions")
         public static class PermissionMember extends BaseEntity{
-            private String organisationMemberId;
+
+            @Column(name = "member_id", nullable = false)
+            private String memberId;
+
+            @ManyToOne(fetch = FetchType.LAZY)
+            @JoinColumn(name = "member_id", insertable = false, updatable = false)
+            private OrganisationMember member;
+
+            @Column(name = "permission_id")
             private String permissionId;
+
+            @ManyToOne(fetch = FetchType.LAZY)
+            @JoinColumn(name = "permission_id", insertable = false, updatable = false)
+            private Permission permission;
+
+            @Enumerated(EnumType.STRING)
+            @Column(name = "category")
             private Category category;
 
             public PermissionMember() {}
 
-            public PermissionMember(String id, String orgMemberId, String permissionId, Category category) {
+            public PermissionMember(String id, String memberId, String permissionId, Category category) {
                 super(id);
-                this.organisationMemberId = orgMemberId;
+                this.memberId = memberId;
                 this.permissionId = permissionId;
                 this.category = category;
             }
@@ -192,7 +237,7 @@ public class Organisation extends BaseEntity {
 
             public Category getCategory() { return category; }
 
-            public String getOrganisationMemberId() { return organisationMemberId; }
+            public String getOrganisationMemberId() { return memberId; }
         }
     }
 }
