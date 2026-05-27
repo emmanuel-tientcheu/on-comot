@@ -4,10 +4,7 @@ import an.awesome.pipelinr.Pipeline;
 import com.example.comot.auth.domaine.viewModel.IdResponse;
 import com.example.comot.organisation.application.useCases.*;
 import com.example.comot.organisation.domaine.viewModel.OrganisationViewModel;
-import com.example.comot.organisation.infrastructure.spring.dto.AddMemberToOrganisationDTO;
-import com.example.comot.organisation.infrastructure.spring.dto.CreateOrganisationDTO;
-import com.example.comot.organisation.infrastructure.spring.dto.RemoveMemberFromOrganisationDTO;
-import com.example.comot.organisation.infrastructure.spring.dto.UpdateOrganisationDTO;
+import com.example.comot.organisation.infrastructure.spring.dto.*;
 import com.example.comot.permission.infrastructure.spring.dto.CreatePermissionDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -77,5 +74,26 @@ public class OrganisationController {
                 dto.getUserId()
         ));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/add-permission-to-member")
+    ResponseEntity<Void> addPermissionToMember(@RequestBody AddPermissionToMemberDTO dto) {
+        var result = this.pipeline.send(new AddPermissionToMemberCommand(
+                dto.getOrganisationId(),
+                dto.getUserId(),
+                dto.getPermissionId(),
+                dto.getCategory()
+        ));
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/remove-permission-from-member")
+    ResponseEntity<Void> removePermissionFromMember(@RequestBody RemovePermissionFromMemberDTO dto) {
+        this.pipeline.send(new RemovePermissionFromMemberCommand(
+                dto.getOrganisationId(),
+                dto.getUserId(),
+                dto.getPermissionId()
+        ));
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

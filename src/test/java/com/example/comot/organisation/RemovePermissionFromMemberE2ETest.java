@@ -5,7 +5,10 @@ import com.example.comot.auth.application.ports.UserRepository;
 import com.example.comot.auth.domaine.model.User;
 import com.example.comot.organisation.application.ports.OrganisationRepository;
 import com.example.comot.organisation.domaine.model.Organisation;
-import com.example.comot.organisation.infrastructure.spring.dto.RemoveMemberFromOrganisationDTO;
+import com.example.comot.organisation.infrastructure.spring.dto.RemovePermissionFromMemberDTO;
+import com.example.comot.permission.application.ports.PermissionRepository;
+import com.example.comot.permission.domaine.model.Category;
+import com.example.comot.permission.domaine.model.Permission;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +27,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @Import(PostgreSQLTestConfiguration.class)
 @Transactional
-public class RemoveMemberFromOrganisationE2ETest {
-
+public class RemovePermissionFromMemberE2ETest {
     @Autowired
     ObjectMapper objectMapper;
 
@@ -38,15 +40,19 @@ public class RemoveMemberFromOrganisationE2ETest {
     @Autowired
     OrganisationRepository organisationRepository;
 
-    User owner;
-    User memberToRemove;
-    User otherMember;
-    Organisation organisation;
+    @Autowired
+    PermissionRepository permissionRepository;
+
+    private User owner;
+    private User member;
+    private Organisation organisation;
+    private Permission permission;
 
     @BeforeEach
     void setUp() {
         userRepository.clear();
         organisationRepository.clear();
+        permissionRepository.clear();
 
         owner = new User(
                 "owner-1",
@@ -56,7 +62,7 @@ public class RemoveMemberFromOrganisationE2ETest {
                 "password"
         );
 
-        memberToRemove = new User(
+        member = new User(
                 "member-1",
                 "John",
                 "Doe",
@@ -64,12 +70,11 @@ public class RemoveMemberFromOrganisationE2ETest {
                 "password"
         );
 
-        otherMember = new User(
-                "member-2",
-                "Jane",
-                "Smith",
-                "jane.smith@gmail.com",
-                "password"
+        permission = new Permission(
+                "perm-1",
+                "View Sales",
+                Category.VIEW_SALES,
+                "Can view sales"
         );
 
         organisation = new Organisation(
@@ -81,73 +86,86 @@ public class RemoveMemberFromOrganisationE2ETest {
         );
 
         userRepository.save(owner);
-        userRepository.save(memberToRemove);
-        userRepository.save(otherMember);
-
+        userRepository.save(member);
+        permissionRepository.save(permission);
         organisationRepository.save(organisation);
 
-        organisation.addMember(memberToRemove.getId());
-        organisation.addMember(otherMember.getId());
-        organisation.addMember(owner.getId());
+        organisation.addMember(member.getId());
+        organisationRepository.save(organisation);
+
+        organisation.addPermission(member.getId(), permission.getId(), permission.getCategory());
         organisationRepository.save(organisation);
     }
 
     @Test
-    void shouldRemoveMemberFromOrganisation() throws Exception {
-        var dto = new RemoveMemberFromOrganisationDTO(
+    void shouldRemovePermissionFromMember() throws Exception {
+        var dto = new RemovePermissionFromMemberDTO(
                 organisation.getId(),
-                memberToRemove.getId()
+                member.getId(),
+                permission.getId()
         );
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.delete("/organisations/remove-member")
+                        MockMvcRequestBuilders.delete("/organisations/remove-permission-from-member")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto))
                 )
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+                .andExpect(MockMvcResultMatchers.status().isOk());
 
         var orgQuery = organisationRepository.findById(organisation.getId());
         Assertions.assertTrue(orgQuery.isPresent());
 
         var updatedOrganisation = orgQuery.get();
-        Assertions.assertFalse(updatedOrganisation.hasMember(memberToRemove.getId()));
-        Assertions.assertTrue(updatedOrganisation.hasMember(otherMember.getId()));
-        Assertions.assertEquals(2, updatedOrganisation.getMembers().size());
+        Assertions.assertFalse(updatedOrganisation.hasPermission(member.getId(), permission.getId()));
     }
 
     @Test
-    void whenMemberNotFound_shouldThrow() throws Exception {
-        var dto = new RemoveMemberFromOrganisationDTO(
+    void whenUserDoesNotHavePermission_shouldThrow() throws Exception {
+        var permission2 = new Permission(
+                "perm-2",
+                "Manage Schedule",
+                Category.MANAGE_SCHEDULE,
+                "Can manage schedule"
+        );
+        permissionRepository.save(permission2);
+
+        var dto = new RemovePermissionFromMemberDTO(
                 organisation.getId(),
-                "non-existent-user"
+                member.getId(),
+                permission2.getId()
         );
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.delete("/organisations/remove-member")
+                        MockMvcRequestBuilders.delete("/organisations/remove-permission-from-member")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto))
                 )
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
-//    @Test
-//    void whenTryToRemoveOwner_shouldThrow() throws Exception {
-//        var dto = new RemoveMemberFromOrganisationDTO(
-//                organisation.getId(),
-//                owner.getId()
-//        );
-//
-//        mockMvc.perform(
-//                        MockMvcRequestBuilders.delete("/organisations/remove-member")
-//                                .contentType(MediaType.APPLICATION_JSON)
-//                                .content(objectMapper.writeValueAsString(dto))
-//                )
-//                .andExpect(MockMvcResultMatchers.status().isBadRequest());
-//
-//        // Vérifier que le propriétaire est toujours là (pas dans les membres)
-//        var orgQuery = organisationRepository.findById(organisation.getId());
-//        Assertions.assertTrue(orgQuery.isPresent());
-//        Assertions.assertFalse(orgQuery.get().hasMember(owner.getId()));
-//    }
+    @Test
+    void whenMemberNotInOrganisation_shouldThrow() throws Exception {
+        var nonMember = new User(
+                "non-member-1",
+                "Jane",
+                "Doe",
+                "jane@test.com",
+                "password"
+        );
+        userRepository.save(nonMember);
+
+        var dto = new RemovePermissionFromMemberDTO(
+                organisation.getId(),
+                nonMember.getId(),
+                permission.getId()
+        );
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders.delete("/organisations/remove-permission-from-member")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(dto))
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
 
 }

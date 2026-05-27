@@ -4,6 +4,7 @@ import com.example.comot.auth.application.ports.UserRepository;
 import com.example.comot.organisation.application.ports.OrganisationQueries;
 import com.example.comot.organisation.application.ports.OrganisationRepository;
 import com.example.comot.organisation.application.useCases.*;
+import com.example.comot.permission.application.ports.PermissionRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -52,5 +53,31 @@ public class OrganisationUseCaseConfiguration {
             OrganisationRepository organisationRepository
     ) {
         return new RemoveMemberFromOrganisationCommandHandler(organisationRepository);
+    }
+
+    @Bean
+    public AddPermissionToMemberCommandHandler addPermissionToMemberCommandHandler(
+            OrganisationRepository organisationRepository,
+            UserRepository userRepository,
+            PermissionRepository permissionRepository
+    ) {
+        return new AddPermissionToMemberCommandHandler(
+                organisationRepository,
+                userRepository,
+                permissionRepository
+        );
+    }
+
+    @Bean
+    public RemovePermissionFromMemberCommandHandler removePermissionFromMemberCommandHandler(
+            OrganisationRepository organisationRepository,
+            UserRepository userRepository,
+            PermissionRepository permissionRepository
+    ) {
+        return new RemovePermissionFromMemberCommandHandler(
+                organisationRepository,
+                userRepository,
+                permissionRepository
+        );
     }
 }
