@@ -46,4 +46,11 @@ public class OrganisationUseCaseConfiguration {
     ) {
         return new AddMemberToOrganisationCommandHandler(organisationRepository, userRepository);
     }
+
+    @Bean
+    public RemoveMemberFromOrganisationCommandHandler removeMemberFromOrganisationCommandHandler(
+            OrganisationRepository organisationRepository
+    ) {
+        return new RemoveMemberFromOrganisationCommandHandler(organisationRepository);
+    }
 }

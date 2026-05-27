@@ -6,6 +6,7 @@ import com.example.comot.organisation.application.useCases.*;
 import com.example.comot.organisation.domaine.viewModel.OrganisationViewModel;
 import com.example.comot.organisation.infrastructure.spring.dto.AddMemberToOrganisationDTO;
 import com.example.comot.organisation.infrastructure.spring.dto.CreateOrganisationDTO;
+import com.example.comot.organisation.infrastructure.spring.dto.RemoveMemberFromOrganisationDTO;
 import com.example.comot.organisation.infrastructure.spring.dto.UpdateOrganisationDTO;
 import com.example.comot.permission.infrastructure.spring.dto.CreatePermissionDTO;
 import jakarta.transaction.Transactional;
@@ -67,5 +68,14 @@ public class OrganisationController {
         ));
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/remove-member")
+    ResponseEntity<Void> removeMemberFromOrganisation(@RequestBody RemoveMemberFromOrganisationDTO dto) {
+        this.pipeline.send(new RemoveMemberFromOrganisationCommand(
+                dto.getOrganisationId(),
+                dto.getUserId()
+        ));
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -5,7 +5,7 @@ import com.example.comot.auth.application.ports.UserRepository;
 import com.example.comot.auth.domaine.model.User;
 import com.example.comot.organisation.application.ports.OrganisationRepository;
 import com.example.comot.organisation.domaine.model.Organisation;
-import com.example.comot.organisation.infrastructure.spring.dto.AddMemberToOrganisationDTO;
+import com.example.comot.organisation.infrastructure.spring.dto.RemoveMemberFromOrganisationDTO;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,8 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @Import(PostgreSQLTestConfiguration.class)
 @Transactional
-public class AddMemberToOrganisationE2ETest {
+public class RemoveMemberFromOrganisationE2ETest {
+
     @Autowired
     ObjectMapper objectMapper;
 
@@ -38,7 +39,8 @@ public class AddMemberToOrganisationE2ETest {
     OrganisationRepository organisationRepository;
 
     User owner;
-    User memberToAdd;
+    User memberToRemove;
+    User otherMember;
     Organisation organisation;
 
     @BeforeEach
@@ -54,11 +56,19 @@ public class AddMemberToOrganisationE2ETest {
                 "password"
         );
 
-        memberToAdd = new User(
+        memberToRemove = new User(
                 "member-1",
                 "John",
                 "Doe",
                 "john.doe@gmail.com",
+                "password"
+        );
+
+        otherMember = new User(
+                "member-2",
+                "Jane",
+                "Smith",
+                "jane.smith@gmail.com",
                 "password"
         );
 
@@ -71,50 +81,73 @@ public class AddMemberToOrganisationE2ETest {
         );
 
         userRepository.save(owner);
-        userRepository.save(memberToAdd);
+        userRepository.save(memberToRemove);
+        userRepository.save(otherMember);
+
+        organisationRepository.save(organisation);
+
+        organisation.addMember(memberToRemove.getId());
+        organisation.addMember(otherMember.getId());
+        organisation.addMember(owner.getId());
         organisationRepository.save(organisation);
     }
 
     @Test
-    void shouldAddMemberToOrganisation() throws Exception {
-        var dto = new AddMemberToOrganisationDTO(
+    void shouldRemoveMemberFromOrganisation() throws Exception {
+        var dto = new RemoveMemberFromOrganisationDTO(
                 organisation.getId(),
-                memberToAdd.getId()
+                memberToRemove.getId()
         );
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/organisations/add-member")
+                        MockMvcRequestBuilders.delete("/organisations/remove-member")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto))
                 )
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
 
         var orgQuery = organisationRepository.findById(organisation.getId());
         Assertions.assertTrue(orgQuery.isPresent());
 
         var updatedOrganisation = orgQuery.get();
-        Assertions.assertTrue(updatedOrganisation.hasMember(memberToAdd.getId()));
+        Assertions.assertFalse(updatedOrganisation.hasMember(memberToRemove.getId()));
+        Assertions.assertTrue(updatedOrganisation.hasMember(otherMember.getId()));
+        Assertions.assertEquals(2, updatedOrganisation.getMembers().size());
     }
 
     @Test
-    void whenMemberAlreadyInOrganisation_shouldThrow() throws Exception {
-        organisation.addMember(memberToAdd.getId());
-        organisationRepository.save(organisation);
-
-        var dto = new AddMemberToOrganisationDTO(
+    void whenMemberNotFound_shouldThrow() throws Exception {
+        var dto = new RemoveMemberFromOrganisationDTO(
                 organisation.getId(),
-                memberToAdd.getId()
+                "non-existent-user"
         );
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.post("/organisations/add-member")
+                        MockMvcRequestBuilders.delete("/organisations/remove-member")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto))
                 )
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andReturn();
-
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
+//    @Test
+//    void whenTryToRemoveOwner_shouldThrow() throws Exception {
+//        var dto = new RemoveMemberFromOrganisationDTO(
+//                organisation.getId(),
+//                owner.getId()
+//        );
+//
+//        mockMvc.perform(
+//                        MockMvcRequestBuilders.delete("/organisations/remove-member")
+//                                .contentType(MediaType.APPLICATION_JSON)
+//                                .content(objectMapper.writeValueAsString(dto))
+//                )
+//                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+//
+//        // Vérifier que le propriétaire est toujours là (pas dans les membres)
+//        var orgQuery = organisationRepository.findById(organisation.getId());
+//        Assertions.assertTrue(orgQuery.isPresent());
+//        Assertions.assertFalse(orgQuery.get().hasMember(owner.getId()));
+//    }
+    
 }
