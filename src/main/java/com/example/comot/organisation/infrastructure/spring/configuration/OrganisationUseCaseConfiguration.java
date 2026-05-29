@@ -80,4 +80,14 @@ public class OrganisationUseCaseConfiguration {
                 permissionRepository
         );
     }
+
+    @Bean
+    public GetMemberCommandHandler getMemberCommandHandler(OrganisationQueries organisationQueries) {
+        return new GetMemberCommandHandler(organisationQueries);
+    }
+
+    @Bean
+    public GetOrganisationMembersCommandHandler getOrganisationMembersCommandHandler(OrganisationQueries organisationQueries) {
+        return new GetOrganisationMembersCommandHandler(organisationQueries);
+    }
 }

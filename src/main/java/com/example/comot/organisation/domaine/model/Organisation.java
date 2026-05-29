@@ -77,7 +77,7 @@ public class Organisation extends BaseEntity {
                 new OrganisationMember(
                         UUID.randomUUID().toString(),
                         userId,
-                        this.getId()
+                        this.id
                 )
         );
     }
@@ -139,6 +139,7 @@ public class Organisation extends BaseEntity {
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "user_id", insertable = false, updatable = false)
+        @MapsId("userId")
         private User user;
 
         @Column(name = "organisation_id")
@@ -146,6 +147,7 @@ public class Organisation extends BaseEntity {
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "organisation_id", insertable = false, updatable = false)
+        @MapsId("organisationId")
         private Organisation organisation;
 
         @OneToMany(
@@ -171,6 +173,10 @@ public class Organisation extends BaseEntity {
         public String getOrganisationId() { return organisationId; }
 
         public Set<PermissionMember> getPermissions() { return permissions; }
+
+        public Organisation getOrganisation() { return organisation; }
+
+        public User getUser() { return user; }
 
         public void addPermission(String permissionId, Category category) {
             if(this.permissions.stream().anyMatch(p -> p.getPermissionId().equals(permissionId))) {
@@ -211,6 +217,7 @@ public class Organisation extends BaseEntity {
 
             @ManyToOne(fetch = FetchType.LAZY)
             @JoinColumn(name = "member_id", insertable = false, updatable = false)
+            @MapsId("memberId")
             private OrganisationMember member;
 
             @Column(name = "permission_id")
@@ -218,6 +225,7 @@ public class Organisation extends BaseEntity {
 
             @ManyToOne(fetch = FetchType.LAZY)
             @JoinColumn(name = "permission_id", insertable = false, updatable = false)
+            @MapsId("permissionId")
             private Permission permission;
 
             @Enumerated(EnumType.STRING)
@@ -238,6 +246,8 @@ public class Organisation extends BaseEntity {
             public Category getCategory() { return category; }
 
             public String getOrganisationMemberId() { return memberId; }
+
+            public Permission getPermission() { return permission; }
         }
     }
 }
