@@ -8,6 +8,9 @@ import com.example.comot.organisation.application.ports.OrganisationRepository;
 import com.example.comot.organisation.application.useCases.CreateOrganisationCommand;
 import com.example.comot.organisation.domaine.model.Organisation;
 import com.example.comot.organisation.infrastructure.spring.dto.CreateOrganisationDTO;
+import com.example.comot.permission.application.ports.PermissionRepository;
+import com.example.comot.permission.domaine.model.Category;
+import com.example.comot.permission.domaine.model.Permission;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,11 +43,17 @@ public class CreateOrganisationE2ETest {
     @Autowired
     OrganisationRepository organisationRepository;
 
+    @Autowired
+    PermissionRepository permissionRepository;
+
     User user;
+    Permission permission;
 
     @BeforeEach
     void setUp() {
         userRepository.clear();
+        permissionRepository.clear();
+
         user = new User(
                 "user-1",
                 "emmanuel",
@@ -53,7 +62,15 @@ public class CreateOrganisationE2ETest {
                 "password"
         );
 
+         permission = new Permission(
+                "perm-1",
+                "title",
+                Category.CREATE_EVENT,
+                "description"
+        );
+
         userRepository.save(user);
+        permissionRepository.save(permission);
     }
 
 

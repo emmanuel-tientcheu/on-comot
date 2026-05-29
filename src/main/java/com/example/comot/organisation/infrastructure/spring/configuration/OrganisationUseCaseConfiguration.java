@@ -14,9 +14,10 @@ public class OrganisationUseCaseConfiguration {
     @Bean
     public CreateOrganisationCommandHandler createOrganisationCommandHandler(
             final OrganisationRepository organisationRepository,
-            final UserRepository userRepository
+            final UserRepository userRepository,
+            final PermissionRepository permissionRepository
     ) {
-        return new CreateOrganisationCommandHandler(organisationRepository, userRepository);
+        return new CreateOrganisationCommandHandler(organisationRepository, userRepository, permissionRepository);
     }
 
     @Bean

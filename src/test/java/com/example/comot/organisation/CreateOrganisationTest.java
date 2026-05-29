@@ -9,6 +9,10 @@ import com.example.comot.organisation.application.useCases.CreateOrganisationCom
 import com.example.comot.organisation.application.useCases.CreateOrganisationCommandHandler;
 import com.example.comot.organisation.domaine.model.Organisation;
 import com.example.comot.organisation.infrastructure.persistance.ram.InMemoryOrganisationRepository;
+import com.example.comot.permission.application.ports.PermissionRepository;
+import com.example.comot.permission.domaine.model.Category;
+import com.example.comot.permission.domaine.model.Permission;
+import com.example.comot.permission.infrastructure.persistance.ram.InMemoryPermissionRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +20,7 @@ import org.junit.jupiter.api.Test;
 public class CreateOrganisationTest {
     private final UserRepository userRepository = new InMemoryUserRepository();
     private final OrganisationRepository organisationRepository = new InMemoryOrganisationRepository();
+    private final PermissionRepository permissionRepository = new InMemoryPermissionRepository();
 
     User user = new User(
             "user-1",
@@ -25,14 +30,23 @@ public class CreateOrganisationTest {
             "password"
     );
 
+    Permission permission = new Permission(
+            "perm-1",
+            "title",
+            Category.CREATE_EVENT,
+            "description"
+    );
+
     private CreateOrganisationCommandHandler commandHandler() {
-        return new CreateOrganisationCommandHandler(organisationRepository, userRepository);
+        return new CreateOrganisationCommandHandler(organisationRepository, userRepository, permissionRepository);
     }
 
     @BeforeEach
     void setUp() {
         userRepository.clear();
+        permissionRepository.clear();
         userRepository.save(user);
+        permissionRepository.save(permission);
     }
 
     @Test
@@ -57,6 +71,11 @@ public class CreateOrganisationTest {
         Assertions.assertEquals(organisation.getDescription(), command.getDescription());
         Assertions.assertTrue(organisation.getActive());
         Assertions.assertEquals(organisation.getUserId(), command.getUserId());
+
+        var permission = permissionRepository.findByCategory(Category.CREATE_EVENT).get();
+
+        Assertions.assertTrue(organisation.hasMember(user.getId()));
+        Assertions.assertTrue(organisation.hasPermission(user.getId(), permission.getId()));
     }
 
     @Test

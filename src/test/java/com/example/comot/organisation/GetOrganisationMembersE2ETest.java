@@ -10,7 +10,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,10 +41,10 @@ public class GetOrganisationMembersE2ETest {
     @Autowired
     EntityManager entityManager;
 
-    private User owner;
-    private User member1;
-    private User member2;
-    private Organisation organisation;
+    User owner;
+    User member1;
+    User member2;
+    Organisation organisation;
 
     @BeforeEach
     void setUp() {
