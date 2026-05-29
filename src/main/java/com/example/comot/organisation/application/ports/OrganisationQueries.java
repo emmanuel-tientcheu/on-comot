@@ -1,6 +1,7 @@
 package com.example.comot.organisation.application.ports;
 
 import com.example.comot.organisation.domaine.viewModel.MemberOrganisationViewModel;
+import com.example.comot.organisation.domaine.viewModel.MemberOrganisationsViewModel;
 import com.example.comot.organisation.domaine.viewModel.OrganisationMembersViewModel;
 import com.example.comot.organisation.domaine.viewModel.OrganisationViewModel;
 
@@ -11,4 +12,5 @@ public interface OrganisationQueries {
     public OrganisationViewModel findById(String id);
     public Optional<MemberOrganisationViewModel> getMember(String orgId, String userId);
     public OrganisationMembersViewModel getMembers(String orgId);
+    public MemberOrganisationsViewModel getOrganisationsUser(String userId);
 }

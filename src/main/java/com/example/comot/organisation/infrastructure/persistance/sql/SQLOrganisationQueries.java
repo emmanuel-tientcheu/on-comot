@@ -4,12 +4,14 @@ import com.example.comot.auth.application.exceptions.NotFoundException;
 import com.example.comot.organisation.application.ports.OrganisationQueries;
 import com.example.comot.organisation.domaine.model.Organisation;
 import com.example.comot.organisation.domaine.viewModel.MemberOrganisationViewModel;
+import com.example.comot.organisation.domaine.viewModel.MemberOrganisationsViewModel;
 import com.example.comot.organisation.domaine.viewModel.OrganisationMembersViewModel;
 import com.example.comot.organisation.domaine.viewModel.OrganisationViewModel;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 import java.awt.font.TextHitInfo;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -130,5 +132,40 @@ public class SQLOrganisationQueries implements OrganisationQueries {
         } catch (NoResultException e) {
             throw new NotFoundException("Organisation", orgId);
         }
+    }
+
+    public MemberOrganisationsViewModel getOrganisationsUser(String userId) {
+        var query = this.entityManager.createQuery(
+                "SELECT DISTINCT m FROM com.example.comot.organisation.domaine.model.Organisation$OrganisationMember m "
+                        + "JOIN FETCH m.user "
+                        + "JOIN FETCH m.organisation "
+                        + "WHERE m.userId = :userId",
+                Organisation.OrganisationMember.class
+        );
+
+        query.setParameter("userId", userId);
+
+        var members = query.getResultList();
+        if (members.isEmpty()) {
+            throw new NotFoundException("User", userId);
+        }
+
+        var organisations = members.stream()
+                .map(member -> {
+                    return new MemberOrganisationsViewModel.Organisation(
+                            member.getOrganisationId(),
+                            member.getOrganisation().getName(),
+                            member.getOrganisation().getDescription()
+                    );
+                }).toList();
+        var user = members.getFirst().getUser();
+
+        return new MemberOrganisationsViewModel(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastname(),
+                user.getEmail(),
+                organisations
+        );
     }
 }

@@ -4,6 +4,7 @@ import an.awesome.pipelinr.Pipeline;
 import com.example.comot.auth.domaine.viewModel.IdResponse;
 import com.example.comot.organisation.application.useCases.*;
 import com.example.comot.organisation.domaine.viewModel.MemberOrganisationViewModel;
+import com.example.comot.organisation.domaine.viewModel.MemberOrganisationsViewModel;
 import com.example.comot.organisation.domaine.viewModel.OrganisationMembersViewModel;
 import com.example.comot.organisation.domaine.viewModel.OrganisationViewModel;
 import com.example.comot.organisation.infrastructure.spring.dto.*;
@@ -113,6 +114,14 @@ public class OrganisationController {
             @PathVariable("organisationId") String organisationId
     ) {
         var result = this.pipeline.send(new GetOrganisationMembersCommand(organisationId));
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("/users/{userId}/organisations")
+    ResponseEntity<MemberOrganisationsViewModel> getUserOrganisations(
+            @PathVariable("userId") String userId
+    ) {
+        var result = this.pipeline.send(new GetUserOrganisationsCommand(userId));
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

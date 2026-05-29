@@ -33,7 +33,7 @@ public class CreateOrganisationCommandHandler implements Command.Handler<CreateO
         );
 
 
-        this.userRepository.findById(command.getUserId()).orElseThrow(
+        var user = this.userRepository.findById(command.getUserId()).orElseThrow(
                 () -> new NotFoundException("User", command.getUserId())
         );
 

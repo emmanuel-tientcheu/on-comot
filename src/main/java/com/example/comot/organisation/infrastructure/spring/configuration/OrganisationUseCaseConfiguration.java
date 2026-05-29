@@ -90,4 +90,9 @@ public class OrganisationUseCaseConfiguration {
     public GetOrganisationMembersCommandHandler getOrganisationMembersCommandHandler(OrganisationQueries organisationQueries) {
         return new GetOrganisationMembersCommandHandler(organisationQueries);
     }
+
+    @Bean
+    public GetUserOrganisationsCommandHandler getUserOrganisationsCommandHandler(OrganisationQueries organisationQueries) {
+        return new GetUserOrganisationsCommandHandler(organisationQueries);
+    }
 }
